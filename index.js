@@ -28,12 +28,7 @@ function reply(t) {
   if (s.includes("hi") || s.includes("hello") || s.includes("مرحبا")) {
     return "👋 Welcome to *Atlantis Bot Assistance*! 🌊\nI’m here to help you with any questions or support you need.";
   }
-  if (
-    s.includes("restaurant") ||
-    s.includes("resturant") ||
-    s.includes("Breakfast") ||
-    s.includes("Saffron")
-  ) {
+  if (s.includes("Breakfast") || s.includes("فطور")) {
     return (
       "🍽️ *Atlantis Dining Options*\n\n" +
       "• *Saffron* (Asian Buffet)\n" +
@@ -144,6 +139,95 @@ function reply(t) {
       "🗺️ *Atlantis Resort Map*\n\n" +
       "You can view or download the full map here:\n" +
       "https://www.atlantis.com/-/media/atlantis/dubai/atp/resort/pdfs/atp-aqv-map-july2022.pdf?utm_source=chatgpt.com"
+    );
+  } // === Breakfast Restaurants ===
+  if (s.includes("saffron")) {
+    return (
+      "🥢 *Saffron* (Asian Buffet)\n\n" +
+      "• Sunday – Friday: Breakfast 07:00 – 11:30\n" +
+      "• Saturday: Brunch 13:00 – 16:00\n" +
+      "• Dinner: Sun – Fri 18:00 – 22:30, Sat 19:00 – 22:30"
+    );
+  }
+
+  if (s.includes("kaleidoscope")) {
+    return (
+      "🍴 *Kaleidoscope* (International Buffet)\n\n" +
+      "• Daily: Breakfast 07:00 – 11:30\n" +
+      "• Dinner: Daily 18:00 – 22:30"
+    );
+  }
+
+  // === Dinner Restaurants ===
+  if (s.includes("nobu")) {
+    return (
+      "🍣 *Nobu* (Japanese-Peruvian, by Chef Nobu Matsuhisa)\n\n" +
+      "🕒 Dinner: Daily 18:00 – 01:00\n" +
+      "(Family seating until 20:30, ages 13+ after 20:30)"
+    );
+  }
+
+  if (s.includes("hakkasan")) {
+    return (
+      "🥡 *Hakkasan* (Modern Cantonese – Michelin-starred)\n\n" +
+      "🕒 Dinner: Daily 18:00 – 01:00\n" +
+      "(Family seating until 20:30, ages 10+ after 20:30)"
+    );
+  }
+
+  if (s.includes("ossiano")) {
+    return (
+      "🐟 *Ossiano* (Underwater Fine Dining – Michelin-starred, Seafood)\n\n" +
+      "🕒 Tuesday – Sunday: 18:00 – 01:00\n" +
+      "(Ages 10+ only)"
+    );
+  }
+
+  if (s.includes("seafire")) {
+    return (
+      "🥩 *Seafire Steakhouse & Bar* (Steakhouse)\n\n" +
+      "🕒 Dinner: Daily 18:00 – 01:00\n" +
+      "(Family seating until 20:30, ages 10+ after 20:30)"
+    );
+  }
+
+  if (s.includes("bread street") || s.includes("gordon ramsay")) {
+    return (
+      "🥖 *Bread Street Kitchen & Bar by Gordon Ramsay* (Modern British/European)\n\n" +
+      "🕒 Dinner: Daily 18:00 – 23:00\n" +
+      "(Restaurant open from 12:00 – 00:00)"
+    );
+  }
+
+  if (s.includes("ayamna")) {
+    return (
+      "🇱🇧 *Ayamna* (Traditional Lebanese Cuisine)\n\n" +
+      "🕒 Dinner: Daily 18:00 – 01:00"
+    );
+  }
+
+  if (s.includes("en fuego")) {
+    return (
+      "🌮 *En Fuego* (Latin American / Mexican Social Dining)\n\n" +
+      "🕒 Tue – Thu: 17:00 – 01:00\n" +
+      "🕒 Fri: 17:00 – 02:00\n" +
+      "🕒 Sat: 19:00 – 02:00\n" +
+      "🕒 Sun: 17:00 – 01:00"
+    );
+  }
+
+  if (s.includes("wavehouse")) {
+    return (
+      "🍔 *Wavehouse* (Family dining + Burgers, Pizza, Arcade 🎳)\n\n" +
+      "🕒 Dinner: Daily until 01:00\n" +
+      "(Open 12:00 – 01:00)"
+    );
+  }
+
+  if (s.includes("asia republic")) {
+    return (
+      "🥢 *Asia Republic* (Pan-Asian casual dining)\n\n" +
+      "🕒 Dinner: Daily 18:00 – 23:00"
     );
   }
 }
