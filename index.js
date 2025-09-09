@@ -1,35 +1,90 @@
 // index.js
 const express = require("express");
-const bodyParser = require("body-parser");
-
 const app = express();
+
+// 1) Serve files from /public so Twilio can fetch your PDFs
+//    (put your PDFs exactly as shown: public/Download-Atlantis-Menu.pdf, public/Download-Imperial-Club.pdf)
+app.use(express.static("public"));
+
+// Health check
 app.get("/", (_req, res) => res.send("OK"));
 
-// Twilio sends x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }));
+// Twilio posts x-www-form-urlencoded to this path
+app.use("/twilio-whatsapp", express.urlencoded({ extended: false }));
 
-// Twilio WhatsApp webhook endpoint
-// keep your existing requires/express setup...
+// --- helpers ---
+function escapeXml(s) {
+  return String(s ?? "").replace(
+    /[<>&'"]/g,
+    (c) =>
+      ({
+        "<": "&lt;",
+        "&": "&amp;",
+        ">": "&gt;",
+        "'": "&apos;",
+        '"': "&quot;",
+      }[c])
+  );
+}
 
-// Twilio posts x-www-form-urlencoded ONLY on this path
-app.use("/twilio-whatsapp", bodyParser.urlencoded({ extended: false }));
+// Build absolute URL for a file in /public
+function publicUrl(req, filename) {
+  const base = process.env.RENDER_EXTERNAL_URL || `https://${req.headers.host}`;
+  return `${base.replace(/\/$/, "")}/${filename}`;
+}
 
+// --- webhook ---
 app.post("/twilio-whatsapp", (req, res) => {
-  const from = req.body.From || "";
-  const text = (req.body.Body || "").trim();
-  const out = reply(text);
+  try {
+    const raw = (req.body.Body || "").trim();
+    const s = raw.toLowerCase();
 
-  // Strict TwiML: XML header + <Body> + charset header
-  const twiml =
-    `<?xml version="1.0" encoding="UTF-8"?>` +
-    `<Response>` +
-    `<Message>` +
-    `<Body>${escapeXml(out)}</Body>` +
-    `</Message>` +
-    `</Response>`;
+    // PDF: Half Board / meals
+    if (
+      s.includes("half board") ||
+      s.includes("الفطور") ||
+      s.includes("العشاء") ||
+      s.includes("العشا")
+    ) {
+      const pdfUrl = publicUrl(req, "Download-Atlantis-Menu.pdf");
+      const twiml =
+        `<?xml version="1.0" encoding="UTF-8"?>` +
+        `<Response><Message>` +
+        `<Body>📄 إليك قائمة الوجبات (Half Board) / Here is the meals (Half Board) PDF</Body>` +
+        `<Media>${escapeXml(pdfUrl)}</Media>` +
+        `</Message></Response>`;
+      return res.status(200).type("text/xml; charset=utf-8").send(twiml);
+    }
 
-  res.status(200).set("Content-Type", "text/xml; charset=utf-8").send(twiml);
+    // PDF: Imperial Club
+    if (s.includes("imperial club") || s.includes("اللاونج")) {
+      const pdfUrl = publicUrl(req, "Download-Imperial-Club.pdf");
+      const twiml =
+        `<?xml version="1.0" encoding="UTF-8"?>` +
+        `<Response><Message>` +
+        `<Body>🗺️ Here is the Atlantis Imperial Club PDF</Body>` +
+        `<Media>${escapeXml(pdfUrl)}</Media>` +
+        `</Message></Response>`;
+      return res.status(200).type("text/xml; charset=utf-8").send(twiml);
+    }
+
+    // Text reply (always fall back to a default so it's never undefined)
+    const maybe = reply(raw);
+    const answer =
+      typeof maybe === "string" && maybe.trim() ? maybe : defaultHelp();
+
+    const twiml =
+      `<?xml version="1.0" encoding="UTF-8"?>` +
+      `<Response><Message><Body>${escapeXml(
+        answer
+      )}</Body></Message></Response>`;
+    return res.status(200).type("text/xml; charset=utf-8").send(twiml);
+  } catch (e) {
+    console.error("Webhook error:", e);
+    return res.status(200).type("text/xml").send("<Response/>");
+  }
 });
+
 function containsArabic(text) {
   return /[\u0600-\u06FF]/.test(text);
 }
@@ -222,29 +277,7 @@ function replyArabic(s) {
   if (s.includes("مرحبا")) {
     return "👋 أهلاً بك في *مساعد أتلانتس*! 🌊\nأنا هنا لمساعدتك والإجابة عن أسئلتك.";
   }
-  if (s.includes("فطور")) {
-    return (
-      "🍽️ *خيارات الإفطار في أتلانتس*\n\n" +
-      "• *سافرون*: من الأحد إلى الجمعة 07:00–11:30 | السبت برانش 13:00–16:00\n" +
-      "• *كاليودوسكوب*: يومياً 07:00–11:30"
-    );
-  }
-  if (s.includes("عشاء") || s.includes("عشا")) {
-    return (
-      "🍽️ *خيارات العشاء في أتلانتس*\n\n" +
-      "• نوبو: يومياً 18:00–01:00\n" +
-      "• هاكاسان: يومياً 18:00–01:00\n" +
-      "• أوسيانو: الثلاثاء – الأحد 18:00–01:00\n" +
-      "• سيفير: يومياً 18:00–01:00\n" +
-      "• مطبخ جوردون رامزي: 18:00–23:00\n" +
-      "• أيمنه: يومياً 18:00–01:00\n" +
-      "• إن فويغو: الأوقات مختلفة\n" +
-      "• سافرون: الأحد – الجمعة 18:00–22:30 | السبت 19:00–22:30\n" +
-      "• كاليودوسكوب: يومياً 18:00–22:30\n" +
-      "• ويف هاوس: حتى 01:00\n" +
-      "• آسيا ريبابلك: يومياً 18:00–23:00"
-    );
-  }
+
   if (s.includes("خريطة") || s.includes("خرائط")) {
     return "🗺️ *خريطة أتلانتس*:\nhttps://www.atlantis.com/-/media/atlantis/dubai/atp/resort/pdfs/atp-aqv-map-july2022.pdf";
   }
@@ -269,19 +302,6 @@ function replyArabic(s) {
 }
 
 // Utility: escape XML characters so TwiML is valid
-function escapeXml(s) {
-  return String(s).replace(
-    /[<>&'"]/g,
-    (c) =>
-      ({
-        "<": "&lt;",
-        "&": "&amp;",
-        ">": "&gt;",
-        "'": "&apos;",
-        '"': "&quot;",
-      }[c])
-  );
-}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () =>
