@@ -31,8 +31,16 @@ app.post("/twilio-whatsapp", (req, res) => {
   res.status(200).set("Content-Type", "text/xml; charset=utf-8").send(twiml);
 });
 
-// Chatbot reply logic
 function reply(t) {
+  const s = (t || "").toLowerCase().trim();
+  if (containsArabic(s)) {
+    return replyArabic(s);
+  } else {
+    return replyEnglish(s);
+  }
+}
+// Chatbot reply logic
+function replyEnglish(s) {
   const s = (t || "").toLowerCase().trim();
 
   // ---- 1) Specific restaurants FIRST (override generic 'dinner') ----
@@ -105,12 +113,12 @@ function reply(t) {
   }
 
   // ---- 2) Greetings (use lowercase keywords) ----
-  if (s.includes("hi") || s.includes("hello") || s.includes("مرحبا")) {
+  if (s.includes("hi") || s.includes("hello")) {
     return "👋 Welcome to *Atlantis Bot Assistance*! 🌊\nI’m here to help you with any questions or support you need.";
   }
 
   // ---- 3) Breakfast (use lowercase 'breakfast') ----
-  if (s.includes("breakfast") || s.includes("فطور")) {
+  if (s.includes("breakfast")) {
     return (
       "🍽️ *Atlantis Dining Options*\n\n" +
       "• *Saffron* (Asian Buffet)\n" +
@@ -122,7 +130,7 @@ function reply(t) {
   }
 
   // ---- 4) Generic Dinner list ----
-  if (s.includes("dinner") || s.includes("عشاء") || s.includes("عشا")) {
+  if (s.includes("dinner")) {
     return (
       "🍽️ *Atlantis Dinner Options*\n\n" +
       "• *Nobu*: Daily 18:00–01:00 (13+ after 20:30)\n" +
@@ -138,12 +146,7 @@ function reply(t) {
       "• *Asia Republic*: Daily 18:00–23:00"
     );
   }
-  if (
-    s.includes("restaurant") ||
-    s.includes("restaurants") ||
-    s.includes("مطعم") ||
-    s.includes("مطاعم")
-  ) {
+  if (s.includes("restaurant") || s.includes("restaurants")) {
     return (
       "🍽️ *Atlantis Dubai Restaurants*\n\n" +
       "- Nobu\n- Hakkasan\n- Ossiano\n- Seafire Steakhouse & Bar\n- Bread Street Kitchen (Gordon Ramsay)\n" +
@@ -156,10 +159,7 @@ function reply(t) {
   if (
     s.includes("aquaventure") ||
     s.includes("water park") ||
-    s.includes("waterpark") ||
-    s.includes("الألعاب") ||
-    s.includes("الالعاب") ||
-    s.includes("الالعاب المائية")
+    s.includes("waterpark")
   ) {
     return (
       "🌊 *Aquaventure Waterpark*\n\n" +
@@ -173,9 +173,7 @@ function reply(t) {
   if (
     s.includes("swimming pool") ||
     s.includes("pool") ||
-    s.includes("swimming") ||
-    s.includes("المسبح") ||
-    s.includes("مسبح")
+    s.includes("swimming")
   ) {
     return (
       "🏊 *Swimming Pools*\n\n" +
@@ -185,12 +183,7 @@ function reply(t) {
   }
 
   // ---- 7) Kids Club ----
-  if (
-    s.includes("kids club") ||
-    s.includes("kids") ||
-    s.includes("نادي الاطفال") ||
-    s.includes("الاطفال")
-  ) {
+  if (s.includes("kids club") || s.includes("kids")) {
     return (
       "🧒 *Atlantis Kids Club*\n\n" +
       "📅 Open daily (Mon–Sun)\n\n" +
@@ -208,12 +201,7 @@ function reply(t) {
   }
 
   // ---- 8) Map ----
-  if (
-    s.includes("map") ||
-    s.includes("maps") ||
-    s.includes("خريطة") ||
-    s.includes("خرائط")
-  ) {
+  if (s.includes("map") || s.includes("maps")) {
     return (
       "🗺️ *Atlantis Resort Map*\n\n" +
       "View/download:\n" +
@@ -229,6 +217,55 @@ function reply(t) {
     "• aquaventure / pool / kids club / map\n" +
     "• or a restaurant name: saffron, kaleidoscope, nobu, hakkasan, ossiano, seafire, bread street, ayamna, en fuego, wavehouse, asia republic"
   );
+}
+function replyArabic(s) {
+  if (s.includes("مرحبا")) {
+    return "👋 أهلاً بك في *مساعد أتلانتس*! 🌊\nأنا هنا لمساعدتك والإجابة عن أسئلتك.";
+  }
+  if (s.includes("فطور")) {
+    return (
+      "🍽️ *خيارات الإفطار في أتلانتس*\n\n" +
+      "• *سافرون*: من الأحد إلى الجمعة 07:00–11:30 | السبت برانش 13:00–16:00\n" +
+      "• *كاليودوسكوب*: يومياً 07:00–11:30"
+    );
+  }
+  if (s.includes("عشاء") || s.includes("عشا")) {
+    return (
+      "🍽️ *خيارات العشاء في أتلانتس*\n\n" +
+      "• نوبو: يومياً 18:00–01:00\n" +
+      "• هاكاسان: يومياً 18:00–01:00\n" +
+      "• أوسيانو: الثلاثاء – الأحد 18:00–01:00\n" +
+      "• سيفير: يومياً 18:00–01:00\n" +
+      "• مطبخ جوردون رامزي: 18:00–23:00\n" +
+      "• أيمنه: يومياً 18:00–01:00\n" +
+      "• إن فويغو: الأوقات مختلفة\n" +
+      "• سافرون: الأحد – الجمعة 18:00–22:30 | السبت 19:00–22:30\n" +
+      "• كاليودوسكوب: يومياً 18:00–22:30\n" +
+      "• ويف هاوس: حتى 01:00\n" +
+      "• آسيا ريبابلك: يومياً 18:00–23:00"
+    );
+  }
+  if (s.includes("خريطة") || s.includes("خرائط")) {
+    return "🗺️ *خريطة أتلانتس*:\nhttps://www.atlantis.com/-/media/atlantis/dubai/atp/resort/pdfs/atp-aqv-map-july2022.pdf";
+  }
+  if (s.includes("المسبح") || s.includes("مسبح")) {
+    return "🏊 *المسابح في أتلانتس*\nالمسبح الرئيسي: 08:00–20:00\nالمسبح العائلي: 09:30–18:30";
+  }
+  if (s.includes("نادي الاطفال") || s.includes("الاطفال")) {
+    return "🧒 *نادي الأطفال في أتلانتس*\nمفتوح يومياً\nالجلسات: 10:00–13:00 | 14:00–17:00 | 18:00–22:00.";
+  }
+  if (
+    s.includes("الألعاب") ||
+    s.includes("الالعاب") ||
+    s.includes("الالعاب المائية")
+  ) {
+    return "🌊 *أكوافنتشر ووتربارك*: 09:30–18:30\n🐠 الأكواريوم مغلق حالياً\n🐟 تجربة Hospital Fish Tale: من 10:00–18:00 (تحتاج حجز)";
+  }
+  if (s.includes("مطعم") || s.includes("مطاعم")) {
+    return "🍽️ *مطاعم أتلانتس دبي*: نوبو، هاكاسان، أوسيانو، سيفير، جوردون رامزي، أيمنه، إن فويغو، سافرون، كاليودوسكوب، ويف هاوس، آسيا ريبابلك، شارك بايتس، باراكوداس، ذا إيدج، ذا شور، تي بي جي (برجر جويِنت)، بلاتوز، بوسيدون كافيه.";
+  }
+
+  return "👋 هذا *مساعد أتلانتس*. اسألني عن الفطور، العشاء، المسابح، أكوافنتشر، نادي الأطفال، الخريطة أو المطاعم.";
 }
 
 // Utility: escape XML characters so TwiML is valid
