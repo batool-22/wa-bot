@@ -30,7 +30,9 @@ app.post("/twilio-whatsapp", (req, res) => {
 
   res.status(200).set("Content-Type", "text/xml; charset=utf-8").send(twiml);
 });
-
+function containsArabic(text) {
+  return /[\u0600-\u06FF]/.test(text);
+}
 function reply(t) {
   const s = (t || "").toLowerCase().trim();
   if (containsArabic(s)) {
