@@ -28,7 +28,7 @@ function reply(t) {
   if (s.includes("hi") || s.includes("hello") || s.includes("مرحبا")) {
     return "👋 Welcome to *Atlantis Bot Assistance*! 🌊\nI’m here to help you with any questions or support you need.";
   }
-  if (s.includes("Breakfast") || s.includes("فطور")) {
+  if (s.includes("breakfast") || s.includes("فطور")) {
     return (
       "🍽️ *Atlantis Dining Options*\n\n" +
       "• *Saffron* (Asian Buffet)\n" +
