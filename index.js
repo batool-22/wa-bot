@@ -24,7 +24,8 @@ app.post("/twilio-whatsapp", (req, res) => {
 
 // Chatbot reply logic
 function reply(t) {
-  const s = (t || "").toLowerCase();
+  const s = (t || "").trim().toLowerCase();
+  console.log("[MATCHING]", s);
   if (s.includes("hi") || s.includes("hello") || s.includes("مرحبا")) {
     return "👋 Welcome to *Atlantis Bot Assistance*! 🌊\nI’m here to help you with any questions or support you need.";
   }
