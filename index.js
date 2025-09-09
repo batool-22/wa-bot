@@ -41,8 +41,6 @@ function reply(t) {
 }
 // Chatbot reply logic
 function replyEnglish(s) {
-  const s = (t || "").toLowerCase().trim();
-
   // ---- 1) Specific restaurants FIRST (override generic 'dinner') ----
   if (s.includes("saffron")) {
     return (
