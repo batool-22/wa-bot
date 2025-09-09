@@ -9,23 +9,33 @@ app.get("/", (_req, res) => res.send("OK"));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // Twilio WhatsApp webhook endpoint
+// keep your existing requires/express setup...
+
+// Twilio posts x-www-form-urlencoded ONLY on this path
+app.use("/twilio-whatsapp", bodyParser.urlencoded({ extended: false }));
+
 app.post("/twilio-whatsapp", (req, res) => {
-  const from = req.body.From; // e.g. 'whatsapp:+9715XXXXXXX'
+  const from = req.body.From || "";
   const text = (req.body.Body || "").trim();
+  const out = reply(text);
 
-  // get chatbot reply
-  const answer = reply(text);
+  // Strict TwiML: XML header + <Body> + charset header
+  const twiml =
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<Response>` +
+    `<Message>` +
+    `<Body>${escapeXml(out)}</Body>` +
+    `</Message>` +
+    `</Response>`;
 
-  // Respond with TwiML (Twilio XML response)
-  res
-    .type("text/xml")
-    .send(`<Response><Message>${escapeXml(answer)}</Message></Response>`);
+  res.status(200).set("Content-Type", "text/xml; charset=utf-8").send(twiml);
 });
 
 // Chatbot reply logic
 function reply(t) {
   const s = (t || "").trim().toLowerCase();
   console.log("[MATCHING]", s);
+
   if (s.includes("hi") || s.includes("hello") || s.includes("مرحبا")) {
     return "👋 Welcome to *Atlantis Bot Assistance*! 🌊\nI’m here to help you with any questions or support you need.";
   }
@@ -142,6 +152,7 @@ function reply(t) {
       "https://www.atlantis.com/-/media/atlantis/dubai/atp/resort/pdfs/atp-aqv-map-july2022.pdf?utm_source=chatgpt.com"
     );
   }
+  return "Hi 👋 this is *Atlantis Bot Assistance*.\nTry: breakfast / dinner / aquaventure / pool / kids club / map\nOr a restaurant: saffron, kaleidoscope, nobu, hakkasan, ossiano, seafire, bread street, ayamna, en fuego, wavehouse, asia republic";
 }
 
 // Utility: escape XML characters so TwiML is valid
