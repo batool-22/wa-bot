@@ -34,9 +34,17 @@ app.post("/twilio-whatsapp", (req, res) => {
   const out = reply(text);
   console.log("[OUT]", JSON.stringify(out));
 
-  res
-    .type("text/xml")
-    .send(`<Response><Message>${escapeXml(out)}</Message></Response>`);
+  // IMPORTANT: include XML header, <Body>, and charset
+  const twiml =
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<Response>` +
+    // Twilio will POST delivery updates to this route; adjust your domain if different
+    `<Message statusCallback="https://atlantis-bot.onrender.com/twilio-status">` +
+    `<Body>${escapeXml(out)}</Body>` +
+    `</Message>` +
+    `</Response>`;
+
+  res.status(200).set("Content-Type", "text/xml; charset=utf-8").send(twiml);
 });
 
 // --- Reply logic ---
